@@ -1,21 +1,150 @@
 package com.example.be.controller;
 
+import com.example.be.domain.CustomResponse;
+import com.example.be.domain.Game;
+import com.example.be.domain.GameConfig;
+import com.example.be.domain.PlayerDTO;
 import com.example.be.repository.ParentRepo;
+import com.example.be.service.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 public class AppController {
 
+@Autowired
+private Service service;
 
-    @Autowired
-    private ParentRepo repo;
 
-    @GetMapping("/hi")
-    public void sayHi(){
-        repo.add(2);
+    @GetMapping("/login")
+    public ResponseEntity<CustomResponse> doLogin(@RequestParam(value = "alias") String playerAlias){
+        try{
+            System.out.println("In login with alias");
+            GameConfig board = service.doLogIn(playerAlias);
+            Game newGame = new Game(0, LocalDateTime.now(),playerAlias,0,0,0);
+            service.addGame(newGame);//id-ul va fi setat de salvarea cu hibernate
+            System.out.println(newGame.getId());
+            System.out.println("Log in succes");
+            board.setCurrentGameId(newGame.getId());
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    CustomResponse.builder().data(Map.of("board",board))
+                            .status(HttpStatus.OK)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+
+            );
+        }catch(Exception ex){
+            System.out.println(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .build()
+
+            );
+
+        }
     }
+
+    @PostMapping("/game-config")
+    public ResponseEntity<CustomResponse> addGameConfiguration(@RequestBody GameConfig gameConfig){
+
+        StringBuilder gameConfigString = new StringBuilder();
+        for (Integer elem : gameConfig.getValues()){
+            //daca este deja string acestu nu mai trebuie convertit
+            gameConfigString.append(elem.toString()).append("/");
+        }
+        gameConfigString.deleteCharAt(gameConfigString.length() - 1);
+        service.addGameConfiguration(gameConfigString.toString());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                CustomResponse.builder()
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+    }
+
+    @GetMapping("/score/{playerAlias}")
+    public ResponseEntity<CustomResponse> getStatistics(@PathVariable("playerAlias") String player)
+    {
+        return     ResponseEntity.status(HttpStatus.OK).body(
+                CustomResponse.builder()
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .data(Map.of("statistics",service.getStatistics(player
+                        )))
+                        .build());
+    }
+
+
+    @PutMapping()
+    public ResponseEntity<CustomResponse> updatePrize(@RequestBody PlayerDTO player){
+        System.out.println("in update prize");
+
+        try{
+            service.updateGame(new Game(player.getCurrentGameId(),null,player.getPlayerAlias(),player.getPlayerPrize(),player.getPlayerScore(),0));
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.OK)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+
+            );
+
+
+
+        }catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .message(ex.getMessage())
+                            .build()
+
+            );
+        }
+    }
+
+    @GetMapping("/scores")
+    public ResponseEntity<CustomResponse> getGlobalScores(){
+        System.out.println("Scores");
+        return ResponseEntity.status(HttpStatus.OK).body(
+                CustomResponse.builder()
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .data(Map.of("scores",service.getGlobalScores()))
+                        .build());
+    }
+
+    @PutMapping("/{gameId}/{status}")
+    public ResponseEntity<CustomResponse> updateGameStatus(@PathVariable(name = "gameId") int gameId,@PathVariable("status") int status){
+            try{
+                service.updateGameStatus(gameId,status);
+               return  ResponseEntity.status(HttpStatus.OK).body(
+                        CustomResponse.builder()
+                                .status(HttpStatus.OK)
+                                .statusCode(HttpStatus.OK.value())
+                                .build());
+            }catch (Exception ex){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        CustomResponse.builder()
+                                .status(HttpStatus.BAD_REQUEST)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .message(ex.getMessage())
+                                .build()
+
+                );
+            }
+    }
+
+
+
+
 }

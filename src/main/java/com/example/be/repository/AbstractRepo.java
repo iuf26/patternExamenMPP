@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+/*Foundation for  Repo classes*/
 public abstract class AbstractRepo<T,ID> {
 
 
@@ -28,7 +29,7 @@ public abstract class AbstractRepo<T,ID> {
 
     public  List<T> findAll(){return null;}
     /*id valid*/
-    public  T findById(ID id){return null;}
+    public  T findById(ID id) throws Exception {return null;}
     public  ID add(T elem){return null;}
     /*id valid*/
     public void update(T elem){};

@@ -16,6 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Random;
 
 
 @org.springframework.stereotype.Service
@@ -69,17 +70,43 @@ public class Service {
      */
     public GameConfig doLogIn(String alias) throws Exception {
         repoPlayer.findById(alias);
-        return repoGame.getRandomGameConfig();
+        GameConfig gameConfig = repoGame.getRandomGameConfig();
+        int i = 1;
+        int starterScore = 0;
+        for(String elem : gameConfig.getValues()){
+            if(i % 2==0 ){
+                starterScore += Integer.parseInt(elem);
+            }
+            i++;
+        }
+        List<String> initValues = gameConfig.getValues();
+        initValues.add(String.valueOf(starterScore));
+        gameConfig.setValues(initValues);
+        return gameConfig;
     }
 
     /**
      * se actualizeaza scorul jocului
      * @param game
      */
-    public void updateGame(Game game){
+    public void updateScore(Game game) throws Exception {
+        Game oldGame = repoGame.findById(game.getId());
+        oldGame.setScore(game.getScore());
+        repoGame.updateGame(oldGame);
 
-        repoGame.updateGame(game);
+    }
 
+
+
+    public void updateLetters(Game game) throws Exception {
+        Game oldGame = repoGame.findById(game.getId());
+        String oldLetters  =  oldGame.getLetters();
+        String newLetters =  oldLetters + game.getLetters();
+
+        oldGame.setLetters(newLetters);
+        System.out.println(oldGame.getLetters());
+        oldGame.setScore(game.getScore());
+        repoGame.updateGame(oldGame);
     }
 
     /**
@@ -97,6 +124,12 @@ public class Service {
         Game oldGame = repoGame.findById(gameId);
         oldGame.setStatus(gameStatus);
             repoGame.updateGame(oldGame);
+    }
+
+    public String getRandomLetter(String letters) {
+        Random random = new Random();
+        int index = random.nextInt(letters.length());
+        return String.valueOf(letters.charAt(index));
     }
 
 }

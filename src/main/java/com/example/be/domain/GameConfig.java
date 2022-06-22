@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GameConfig {
-    private List<Integer> values;
+    private List<String> values;
     private int currentGameId;
+
 }

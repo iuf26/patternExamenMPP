@@ -8,6 +8,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Entity
@@ -25,8 +26,8 @@ public class Game implements Serializable {
     private LocalDateTime beginTime;
     @Column(name = "player")
     private String playerAlias;
-    @Column(name = "prize")
-    private int prize;
+    @Column(name="letters")
+    private String letters;
     @Column(name = "score")
     private int score;
     @Column(name = "status")

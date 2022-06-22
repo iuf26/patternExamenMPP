@@ -78,11 +78,11 @@ public class RepoGame extends AbstractRepo<Game,Integer>{
                 while(rs.next()){
                     LocalDateTime beginTime  = rs.getTimestamp("begin_time").toLocalDateTime();
                     String playerAlias = rs.getString("player");
-                    int prize = rs.getInt("prize");
+                    String letters = rs.getString("letters");
                     int id = rs.getInt("id");
                     int score  = rs.getInt("score");
                     int status = rs.getInt("status");
-                    all.add(new Game(id,beginTime,playerAlias,prize,score,status));
+                    all.add(new Game(id,beginTime,playerAlias,letters,score,status));
 
                 }
 
@@ -105,7 +105,8 @@ public class RepoGame extends AbstractRepo<Game,Integer>{
             try(ResultSet rs = ps.executeQuery()) {
                 if(rs.next()){
                     String gameConfig = rs.getString("config");
-                    List<Integer> result = Arrays.stream(gameConfig.split("/")).map(Integer::parseInt).collect(Collectors.toList());
+
+                    List<String> result = Arrays.stream(gameConfig.split("/")).collect(Collectors.toList());
                     return new GameConfig(result,0);
                 }
 
@@ -127,7 +128,7 @@ public class RepoGame extends AbstractRepo<Game,Integer>{
             try{
                 tx = session.beginTransaction();
                 Game oldGame= session.load(Game.class,game.getId());
-               oldGame.setPrize(game.getPrize());
+               oldGame.setLetters(game.getLetters());
                oldGame.setScore(game.getScore());
                 oldGame.setStatus(game.getStatus());
                 tx.commit();
@@ -141,6 +142,7 @@ public class RepoGame extends AbstractRepo<Game,Integer>{
     }
 
     public List<Game> getGlobalScores() {
+        System.out.println("Get global scores");
         List<Game> all = new ArrayList<>();
 
 
@@ -150,7 +152,7 @@ public class RepoGame extends AbstractRepo<Game,Integer>{
             Transaction tx = null;
             try{
                 tx = session.beginTransaction();
-                all = session.createQuery("from Game g  where g.status in (:stat) order by g.prize DESC",Game.class)
+                all = session.createQuery("from Game g  where g.status in (:stat) order by g.score DESC",Game.class)
                         .setParameter("stat",1)
                         .list();
                 tx.commit();

@@ -13,7 +13,7 @@ public class PlayerDTO {
 
     String playerAlias;
     int playerScore;
-    int playerPrize;
+    String playerLetters;
     int currentGameId;
 
 }

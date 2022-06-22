@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +30,8 @@ private Service service;
         try{
             System.out.println("In login with alias");
             GameConfig board = service.doLogIn(playerAlias);
-            Game newGame = new Game(0, LocalDateTime.now(),playerAlias,0,0,0);
+            int initialPoints = Integer.parseInt(board.getValues().get(board.getValues().size() - 1));
+            Game newGame = new Game(0, LocalDateTime.now(),playerAlias,"",initialPoints,0);
             service.addGame(newGame);//id-ul va fi setat de salvarea cu hibernate
             System.out.println(newGame.getId());
             System.out.println("Log in succes");
@@ -58,9 +60,9 @@ private Service service;
     public ResponseEntity<CustomResponse> addGameConfiguration(@RequestBody GameConfig gameConfig){
 
         StringBuilder gameConfigString = new StringBuilder();
-        for (Integer elem : gameConfig.getValues()){
+        for (String elem : gameConfig.getValues()){
             //daca este deja string acestu nu mai trebuie convertit
-            gameConfigString.append(elem.toString()).append("/");
+            gameConfigString.append(elem).append("/");
         }
         gameConfigString.deleteCharAt(gameConfigString.length() - 1);
         service.addGameConfiguration(gameConfigString.toString());
@@ -70,6 +72,31 @@ private Service service;
                         .statusCode(HttpStatus.OK.value())
                         .build());
     }
+
+
+    @GetMapping("/games/{id}")
+    public ResponseEntity<CustomResponse> getGame(@PathVariable(name = "id") int id){
+        try {
+            Game game  = service.getRepoGame().findById(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.OK)
+                            .statusCode(HttpStatus.OK.value())
+                            .data(Map.of("game",game))
+                            .build());
+        }
+        catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .message(ex.getMessage())
+                            .build());
+        }
+
+    }
+
+
 
     @GetMapping("/score/{playerAlias}")
     public ResponseEntity<CustomResponse> getStatistics(@PathVariable("playerAlias") String player)
@@ -84,12 +111,12 @@ private Service service;
     }
 
 
-    @PutMapping()
-    public ResponseEntity<CustomResponse> updatePrize(@RequestBody PlayerDTO player){
+    @PutMapping("/score")
+    public ResponseEntity<CustomResponse> updateScore(@RequestBody PlayerDTO player){
         System.out.println("in update prize");
 
         try{
-            service.updateGame(new Game(player.getCurrentGameId(),null,player.getPlayerAlias(),player.getPlayerPrize(),player.getPlayerScore(),0));
+            service.updateScore(new Game(player.getCurrentGameId(),null,player.getPlayerAlias(),"",player.getPlayerScore(),0));
             return ResponseEntity.status(HttpStatus.OK).body(
                     CustomResponse.builder()
                             .status(HttpStatus.OK)
@@ -111,6 +138,35 @@ private Service service;
             );
         }
     }
+
+    @PutMapping("/letters")
+    public ResponseEntity<CustomResponse> updateLetters(@RequestBody PlayerDTO player){
+        System.out.println("in update letters");
+
+        try{
+            service.updateLetters(new Game(player.getCurrentGameId(),null,player.getPlayerAlias(),player.getPlayerLetters(),player.getPlayerScore(),0));
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.OK)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+
+            );
+
+
+
+        }catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .message(ex.getMessage())
+                            .build()
+
+            );
+        }
+    }
+
 
     @GetMapping("/scores")
     public ResponseEntity<CustomResponse> getGlobalScores(){
@@ -142,6 +198,29 @@ private Service service;
 
                 );
             }
+    }
+
+    @GetMapping("/propose-letter/{available}")
+    public ResponseEntity<CustomResponse> getServerProposedLetter(@PathVariable(name = "available") String letters){
+        if(!Objects.equals(letters, "")) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.OK)
+                            .data(Map.of("proposed",service.getRandomLetter(letters)))
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .message("Invalid letters")
+                            .build());
+        }
+
+
     }
 
 

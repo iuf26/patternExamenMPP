@@ -1,10 +1,6 @@
 package com.example.be.controller;
 
-import com.example.be.domain.CustomResponse;
-import com.example.be.domain.Game;
-import com.example.be.domain.GameConfig;
-import com.example.be.domain.PlayerDTO;
-import com.example.be.repository.ParentRepo;
+import com.example.be.domain.*;
 import com.example.be.service.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,16 +9,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@RestController
 @RequiredArgsConstructor
+@RestController
 public class AppController {
 
-@Autowired
-private Service service;
+
+
+
+        @Autowired
+        private Service service;
+
+
 
 
     @GetMapping("/login")
@@ -35,6 +35,9 @@ private Service service;
             service.addGame(newGame);//id-ul va fi setat de salvarea cu hibernate
             System.out.println(newGame.getId());
             System.out.println("Log in succes");
+
+
+            System.out.println("showd send message");
             board.setCurrentGameId(newGame.getId());
             return ResponseEntity.status(HttpStatus.OK).body(
                     CustomResponse.builder().data(Map.of("board",board))
@@ -168,6 +171,7 @@ private Service service;
     }
 
 
+
     @GetMapping("/scores")
     public ResponseEntity<CustomResponse> getGlobalScores(){
         System.out.println("Scores");
@@ -179,10 +183,13 @@ private Service service;
                         .build());
     }
 
+
     @PutMapping("/{gameId}/{status}")
     public ResponseEntity<CustomResponse> updateGameStatus(@PathVariable(name = "gameId") int gameId,@PathVariable("status") int status){
             try{
+                System.out.println("in update game");
                 service.updateGameStatus(gameId,status);
+
                return  ResponseEntity.status(HttpStatus.OK).body(
                         CustomResponse.builder()
                                 .status(HttpStatus.OK)
@@ -199,6 +206,9 @@ private Service service;
                 );
             }
     }
+
+
+
 
     @GetMapping("/propose-letter/{available}")
     public ResponseEntity<CustomResponse> getServerProposedLetter(@PathVariable(name = "available") String letters){

@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /*Foundation for  Repo classes*/
-public abstract class AbstractRepo<T,ID> {
+public abstract class AbstractRepo<T,ID>  implements Repo<T,ID> {
 
 
     @PersistenceContext

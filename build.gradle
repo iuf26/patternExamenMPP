@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+
     implementation 'org.springframework.boot:spring-boot-starter-web:2.7.0'
     compileOnly 'org.projectlombok:lombok:1.18.24'
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.0'
@@ -26,9 +27,18 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.7.0'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.0'
+    implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'
+    implementation group: 'javax.websocket', name: 'javax.websocket-client-api', version: '1.1'
 
     implementation group: 'org.javassist', name: 'javassist', version: '3.28.0-GA'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: '2.7.0'
+    implementation group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
 
+    //implementation group: 'org.springframework', name: 'spring-websocket', version: '5.3.21'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
+    implementation group: 'org.springframework.data', name: 'spring-data-elasticsearch', version: '4.4.0'
 
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.6.5.Final'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.7.0'

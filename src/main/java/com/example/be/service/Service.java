@@ -1,20 +1,22 @@
 package com.example.be.service;
 
-import com.example.be.domain.Game;
-import com.example.be.domain.GameConfig;
-import com.example.be.domain.UserPack;
+import com.example.be.domain.*;
 import com.example.be.repository.AbstractRepo;
+import com.example.be.repository.Repo;
 import com.example.be.repository.RepoGame;
 import com.example.be.repository.RepoPlayer;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.sql.Connection;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -24,18 +26,20 @@ import java.util.Random;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Service {
+
+public class Service implements  IIService {
 
     @Autowired
     RepoGame repoGame;
     @Autowired
-    AbstractRepo<String,String> repoPlayer;
+    RepoPlayer repoPlayer;
 
 
     /**
      *
      * @param config
      */
+    @Override
     public void addGameConfiguration(String config){
         repoGame.addGameConfiguration(config);
     }
@@ -46,6 +50,7 @@ public class Service {
      * @param player
      * @return statistica legata de jocurile la care a pariticipat un jucator
      */
+    @Override
     public UserPack getStatistics(String player) {
             return repoGame.getStatistics(player);
     }
@@ -56,10 +61,14 @@ public class Service {
      * adauga un joc in baza de date,iar id-ul lui game se va schimba cu id-ul primit special
      * de la baza de date
      */
+    @Override
     public void  addGame(Game game){
             int givenID = repoGame.add(game);
 
     }
+
+
+
 
     /**
      *
@@ -68,6 +77,7 @@ public class Service {
      *
      * @throws Exception
      */
+    @Override
     public GameConfig doLogIn(String alias) throws Exception {
         repoPlayer.findById(alias);
         GameConfig gameConfig = repoGame.getRandomGameConfig();
@@ -82,6 +92,9 @@ public class Service {
         List<String> initValues = gameConfig.getValues();
         initValues.add(String.valueOf(starterScore));
         gameConfig.setValues(initValues);
+
+
+
         return gameConfig;
     }
 
@@ -89,6 +102,7 @@ public class Service {
      * se actualizeaza scorul jocului
      * @param game
      */
+    @Override
     public void updateScore(Game game) throws Exception {
         Game oldGame = repoGame.findById(game.getId());
         oldGame.setScore(game.getScore());
@@ -98,6 +112,7 @@ public class Service {
 
 
 
+    @Override
     public void updateLetters(Game game) throws Exception {
         Game oldGame = repoGame.findById(game.getId());
         String oldLetters  =  oldGame.getLetters();
@@ -114,22 +129,26 @@ public class Service {
      * @return clasamentul  global al jocului
      */
 
+    @Override
     public List<Game> getGlobalScores(){
         return repoGame.getGlobalScores();
     }
 
 
-    public void updateGameStatus(int gameId,int gameStatus) throws Exception{
+    @Override
+    public void updateGameStatus(int gameId, int gameStatus) throws Exception{
 
         Game oldGame = repoGame.findById(gameId);
         oldGame.setStatus(gameStatus);
             repoGame.updateGame(oldGame);
     }
 
+    @Override
     public String getRandomLetter(String letters) {
         Random random = new Random();
         int index = random.nextInt(letters.length());
         return String.valueOf(letters.charAt(index));
     }
+
 
 }
